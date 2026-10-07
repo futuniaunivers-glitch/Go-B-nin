@@ -1,0 +1,90 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: checks if the caller is an authenticated admin on the whitelist
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Default deny for all unspecified paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // admins collection: whitelist of authorized administrators
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // Only configured directly in the Firebase Console
+    }
+
+    // products collection
+    match /products/{productId} {
+      // Public read allowed only if product is active; Admin can read all (including inactive)
+      allow read: if (resource != null && resource.data.isActive == true) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // categories collection
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // settings collection
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // orders collection:
+    // - Public creation with strict validation
+    // - Admin only for read, update, delete
+    match /orders/{orderId} {
+      allow create: if
+        request.resource.data.status == "new" &&
+        request.resource.data.stockDeducted == false &&
+        request.resource.data.acceptedConditions == true &&
+        request.resource.data.total is int &&
+        request.resource.data.total > 0 &&
+        request.resource.data.items is list &&
+        request.resource.data.items.size() >= 1 &&
+        request.resource.data.items.size() <= 50 &&
+        request.resource.data.customerName is string &&
+        request.resource.data.customerName.size() >= 2 &&
+        request.resource.data.customerName.size() <= 100 &&
+        request.resource.data.phone is string &&
+        request.resource.data.phone.size() >= 8 &&
+        request.resource.data.phone.size() <= 25 &&
+        request.resource.data.city is string &&
+        request.resource.data.city.size() >= 2 &&
+        request.resource.data.city.size() <= 100 &&
+        request.resource.data.area is string &&
+        request.resource.data.area.size() >= 2 &&
+        request.resource.data.area.size() <= 100 &&
+        request.resource.data.deliveryNote is string &&
+        request.resource.data.deliveryNote.size() >= 4 &&
+        request.resource.data.deliveryNote.size() <= 500 &&
+        request.resource.data.keys().hasOnly([
+          'orderNumber',
+          'customerName',
+          'phone',
+          'city',
+          'area',
+          'deliveryNote',
+          'extraNote',
+          'items',
+          'total',
+          'status',
+          'stockDeducted',
+          'acceptedConditions',
+          'isDemo',
+          'createdAt'
+        ]);
+
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

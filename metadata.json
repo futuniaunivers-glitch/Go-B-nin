@@ -1,0 +1,6 @@
+{
+  "name": "Grossiste des Senteurs 229",
+  "description": "Boutique béninoise de vente en gros, demi-gros et détail de parfums, huiles, déodorants, désodorisants et diffuseurs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

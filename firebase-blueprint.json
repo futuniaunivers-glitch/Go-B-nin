@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Represents a scent/perfume product sold in retail and wholesale tiers.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 200 },
+        "categoryId": { "type": "string", "maxLength": 64 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "imageUrl": { "type": "string" },
+        "thumbUrl": { "type": "string" },
+        "imagePath": { "type": "string" },
+        "thumbPath": { "type": "string" },
+        "stock": { "type": "integer" },
+        "lowStockThreshold": { "type": "integer" },
+        "detailPrice": { "type": "integer" },
+        "wholesaleEnabled": { "type": "boolean" },
+        "wholesaleTiers": { "type": "array" },
+        "isActive": { "type": "boolean" },
+        "isDemo": { "type": "boolean" }
+      },
+      "required": ["name", "categoryId", "stock", "detailPrice", "isActive"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category collection (Parfums, Huiles, Déodorants, etc.)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "imageUrl": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "order": { "type": "integer" }
+      },
+      "required": ["name", "isActive", "order"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Represents a customer order sent via WhatsApp and tracked in admin.",
+      "type": "object",
+      "properties": {
+        "orderNumber": { "type": "string", "maxLength": 40 },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 25 },
+        "city": { "type": "string", "maxLength": 100 },
+        "area": { "type": "string", "maxLength": 100 },
+        "deliveryNote": { "type": "string", "maxLength": 500 },
+        "extraNote": { "type": "string", "maxLength": 500 },
+        "items": { "type": "array" },
+        "total": { "type": "integer" },
+        "status": { "type": "string", "enum": ["new", "confirmed", "preparing", "delivered", "cancelled"] },
+        "stockDeducted": { "type": "boolean" },
+        "acceptedConditions": { "type": "boolean" },
+        "isDemo": { "type": "boolean" }
+      },
+      "required": ["orderNumber", "customerName", "phone", "city", "area", "deliveryNote", "items", "total", "status", "stockDeducted", "acceptedConditions"]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Global store settings at settings/main.",
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string", "maxLength": 100 },
+        "tagline": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "whatsappNumber": { "type": "string", "maxLength": 30 },
+        "whatsappChannelUrl": { "type": "string" },
+        "tiktokUrl": { "type": "string" },
+        "facebookUrl": { "type": "string" },
+        "mapsUrl": { "type": "string" },
+        "locationText": { "type": "string", "maxLength": 300 },
+        "salesConditions": { "type": "array" },
+        "deliveryInfo": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["businessName", "whatsappNumber", "salesConditions"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Products catalog"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Categories for navigation and filtering"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Orders received from customers"
+    },
+    "/settings/main": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Commercial and contact settings"
+    },
+    "/admins/{uid}": {
+      "schema": "object",
+      "description": "Whitelist of administrator user IDs"
+    }
+  }
+}
